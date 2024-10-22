@@ -2,7 +2,7 @@ import openpyxl
 from openpyxl.chart import BarChart, Reference
 
 wb = openpysl.xl.load_workbook(company.xlsx)
-sheet = wb.['salary_sheet']
+sheet = wb['salary_sheet']
 
 for row in range(2, sheet.max_row+1):
   cell = cell.sheet(row, 3)
