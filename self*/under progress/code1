@@ -1,0 +1,114 @@
+import mysql.connector
+from mysql.connector import Error
+
+try:
+    # Establish the connection
+    connection = mysql.connector.connect(
+        host='localhost', 
+        database='cinema_db', 
+        user='yourusername', 
+        password='yourpassword'
+    )
+
+    if connection.is_connected():
+        cursor = connection.cursor()
+        cursor.execute("SELECT DATABASE();")
+        record = cursor.fetchone()
+        print("You're connected to database: ", record)
+
+        # Creating table
+        movie_table_query = """CREATE TABLE Movies (
+                                MovieId INT AUTO_INCREMENT PRIMARY KEY,
+                                MovieName VARCHAR(100),
+                                ShowTime DATETIME,
+                                TotalSeats INT,
+                                AvailableSeats INT
+                                ); """
+        cursor.execute(movie_table_query)
+
+        seat_table_query = """CREATE TABLE Seats (
+                                SeatId INT AUTO_INCREMENT PRIMARY KEY,
+                                MovieId INT,
+                                SeatType ENUM('Regular', 'Premium'),
+                                Price DECIMAL(5, 2),
+                                IsBooked BOOLEAN,
+                                FOREIGN KEY (MovieId) REFERENCES Movies(MovieId)
+                                ); """
+        cursor.execute(seat_table_query)
+
+        snack_table_query = """CREATE TABLE Snacks (
+                                SnackId INT AUTO_INCREMENT PRIMARY KEY,
+                                SnackName VARCHAR(100),
+                                Price DECIMAL(5, 2)
+                                ); """
+        cursor.execute(snack_table_query)
+
+        ticket_table_query = """CREATE TABLE Tickets (
+                                TicketId INT AUTO_INCREMENT PRIMARY KEY,
+                                MovieId INT,
+                                CustomerName VARCHAR(100),
+                                Age INT,
+                                SeatId INT,
+                                SnackId INT,
+                                FOREIGN KEY (MovieId) REFERENCES Movies(MovieId),
+                                FOREIGN KEY (SeatId) REFERENCES Seats(SeatId),
+                                FOREIGN KEY (SnackId) REFERENCES Snacks(SnackId)
+                                ); """
+        cursor.execute(ticket_table_query)
+
+        # Insert Movie
+        insert_movie_query = """INSERT INTO Movies (MovieName, ShowTime, TotalSeats, AvailableSeats) 
+                                VALUES ('Avengers', '2023-12-20 18:00:00', 100, 100);"""
+        cursor.execute(insert_movie_query)
+        connection.commit()
+        print(cursor.rowcount, "Movie inserted.")
+
+        # Insert Seats
+        for i in range(1, 101):
+            seat_type = 'Premium' if i <= 20 else 'Regular'  # First 20 seats are premium
+            price = 150 if seat_type == 'Premium' else 100  # Premium seats are more expensive
+            insert_seat_query = f"""INSERT INTO Seats (MovieId, SeatType, Price, IsBooked) 
+                                    VALUES (1, '{seat_type}', {price}, FALSE);"""
+            cursor.execute(insert_seat_query)
+        connection.commit()
+        print("Seats inserted.")
+
+        # Insert Snacks
+        insert_snack_query = """INSERT INTO Snacks (SnackName, Price) 
+                                VALUES ('Popcorn', 50);"""
+        cursor.execute(insert_snack_query)
+        connection.commit()
+        print(cursor.rowcount, "Snack inserted.")
+
+        # Book ticket
+        book_ticket_query = """INSERT INTO Tickets (MovieId, CustomerName, Age, SeatId, SnackId) 
+                               VALUES (1, 'John Doe', 30, 1, 1);"""
+        cursor.execute(book_ticket_query)
+        connection.commit()
+        print(cursor.rowcount, "Ticket booked.")
+
+        # Update seat status
+        update_seat_query = """UPDATE Seats SET IsBooked = TRUE WHERE SeatId = 1;"""
+        cursor.execute(update_seat_query)
+        connection.commit()
+        print(cursor.rowcount, "Seat status updated.")
+
+        # Generate receipt
+        select_ticket_query = """SELECT t.TicketId, m.MovieName, m.ShowTime, s.SeatType, s.Price AS SeatPrice, sn.SnackName, sn.Price AS SnackPrice
+                                 FROM Tickets t
+                                 JOIN Movies m ON t.MovieId = m.MovieId
+                                 JOIN Seats s ON t.SeatId = s.SeatId
+                                 JOIN Snacks sn ON t.SnackId = sn.SnackId
+                                 WHERE t.TicketId = 1;"""
+        cursor.execute(select_ticket_query)
+        print("TicketId, MovieName, ShowTime, SeatType, SeatPrice, SnackName, SnackPrice")
+        for (TicketId, MovieName, ShowTime, SeatType, SeatPrice, SnackName, SnackPrice) in cursor:
+            print(TicketId, MovieName, ShowTime, SeatType, SeatPrice, SnackName, SnackPrice)
+
+except Error as e:
+    print("Error while connecting to MySQL", e)
+finally:
+    if connection.is_connected():
+        cursor.close()
+        connection.close()
+        print("MySQL connection is closed")
