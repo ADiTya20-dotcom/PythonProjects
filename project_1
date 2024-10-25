@@ -1,12 +1,12 @@
-import openpyxl
+import openpyxl as xl
 from openpyxl.chart import BarChart, Reference
 
-wb = openpysl.xl.load_workbook(company.xlsx)
+wb = xl.load_workbook('C:\\Users\\K M PANDEY\\Desktop\\company.xlsx')
 sheet = wb['salary_sheet']
 
 for row in range(2, sheet.max_row+1):
-  cell = cell.sheet(row, 3)
-  increased_salary = cell.value + (0.1 * cell.value)
+  cell = sheet.cell(row, 3)
+  increased_salary = cell.value * 0.9
   updated_salary = sheet.cell(row, 4)
   updated_salary.value = increased_salary
 
@@ -16,4 +16,4 @@ chart = BarChart()
 chart.add_data(values)
 sheet.add_chart(chart, 'a8')
 
-wb.save(company1.xlsx)
+wb.save('C:\\Users\\K M PANDEY\\Desktop\\updated_salary_sheet.xlsx')
