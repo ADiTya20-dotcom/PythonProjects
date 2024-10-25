@@ -1,0 +1,92 @@
+class Cinema:
+    def __init__(self):
+        self.movies = {"Avengers": {"seats": 100, "showtimes": ["18:00", "21:00"]}, 
+                       "Justice League": {"seats": 80, "showtimes": ["17:00", "20:00"]}}
+        self.snacks = {"Popcorn": 126, "Soda": 89}
+        self.tickets = []
+        self.seats = {movie: list(range(1, details['seats'] + 1)) for movie, details in self.movies.items()}
+
+    def show_movies(self):
+        print("We are showing the following movies:")
+        for movie, details in self.movies.items():
+            print(f"{movie}: {details['seats']} seats available at {', '.join(details['showtimes'])}")
+
+    def select_movie(self):
+        movie = input("Enter the movie you want to watch: ")
+        if movie in self.movies and self.movies[movie]['seats'] > 0:
+            return movie
+        else:
+            print("Sorry, this movie is not available.")
+            return None
+
+    def select_showtime(self, movie):
+        showtime = input("Enter the showtime: ")
+        if showtime in self.movies[movie]['showtimes']:
+            return showtime
+        else:
+            print("Sorry, this showtime is not available.")
+            return None
+
+    def show_snacks(self):
+        print("You can choose from the following snacks:")
+        for snack, price in self.snacks.items():
+            print(f"{snack}: ${price}")
+
+    def select_snack(self):
+        snack = input("Enter the snack you want to buy: ")
+        if snack in self.snacks:
+            return snack
+        else:
+            print("Sorry, this snack is not available.")
+            return None
+
+    def select_seat(self, movie):
+        print("Available seats: ", self.seats[movie])
+        seat = int(input("Enter your preferred seat number: "))
+        if seat in self.seats[movie]:
+            self.seats[movie].remove(seat)
+            return seat
+        else:
+            print("Sorry, this seat is not available.")
+            return None
+
+    def book_ticket(self, movie, seat):
+        name = input("Enter your name: ")
+        age = input("Enter your age: ")
+        if age.isdigit() and int(age) > 0:
+            self.movies[movie]['seats'] -= 1
+            ticket_id = len(self.tickets) + 1
+            self.tickets.append({"TicketId": ticket_id, "Movie": movie, "Name": name, "Age": age, "Seat": seat})
+            print(f"Booked one ticket for {movie}. Your ticket ID is {ticket_id}. Your seat number is {seat}.")
+        else:
+            print("Invalid age. Please enter a positive number.")
+
+    def make_payment(self, amount):
+        confirmation = input(f"Do you confirm the payment of ${amount}? (yes/no): ")
+        if confirmation.lower() == 'yes':
+            print(f"Making a payment of ${amount}...")
+            print("Payment successful!")
+        else:
+            print("Payment cancelled.")
+
+    def show_receipt(self, ticket_id):
+        ticket = self.tickets[ticket_id - 1]
+        print(f"Receipt for ticket ID {ticket_id}:")
+        print(f"Movie: {ticket['Movie']}")
+        print(f"Name: {ticket['Name']}")
+        print(f"Age: {ticket['Age']}")
+        print(f"Seat: {ticket['Seat']}")
+
+cinema = Cinema()
+cinema.show_movies()
+movie = cinema.select_movie()
+if movie:
+    showtime = cinema.select_showtime(movie)
+    if showtime:
+        cinema.show_snacks()
+        snack = cinema.select_snack()
+        seat = cinema.select_seat(movie)
+        if seat:
+            cinema.book_ticket(movie, seat)
+            cinema.make_payment(356)  
+            cinema.show_receipt(len(cinema.tickets))
